@@ -1,13 +1,33 @@
 "use client";
-import { ChevronsLeft, MenuIcon } from "lucide-react";
+import {
+  ChevronsLeft,
+  MenuIcon,
+  Plus,
+  Rocket,
+  Search,
+  Settings,
+  Trash,
+} from "lucide-react";
 import React, { ElementRef, useEffect, useRef, useState } from "react";
 import { cn } from "../../../lib/utils";
 import { useMediaQuery } from "usehooks-ts";
+import { DocumentList } from "../../(home)/components/document-list";
+import { Item } from "../../(home)/components/item";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { UserBox } from "./user-box";
+import { Progress } from "../../../components/ui/progress";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "../../../components/ui/popover";
+import { TrashBox } from "./trash-box";
 
 export const Sidebar = () => {
   const isMobile = useMediaQuery("(max-width:770px)");
   console.log(isMobile);
-
+  const createDocument = useMutation(api.document.createDocument);
   const sidebarRef = useRef<ElementRef<"div">>(null);
   const navbarRef = useRef<ElementRef<"div">>(null);
   const isResizing = useRef(false);
@@ -81,6 +101,10 @@ export const Sidebar = () => {
     document.removeEventListener("mouseup", handleMouseUp);
   };
 
+  const onCreateDocument = () => {
+    createDocument({ title: "New Document" });
+  };
+  const arr = [1];
   return (
     <>
       <div
@@ -101,6 +125,30 @@ export const Sidebar = () => {
         >
           <ChevronsLeft className="h-6 w-6" />
         </div>
+
+        <div>
+          <UserBox />
+          <Item label="Search" Icon={Search} />
+          <Item label="Settings" Icon={Settings} />
+          <Item label="New Document" Icon={Plus} onClick={onCreateDocument} />
+        </div>
+        <div className="mt-4">
+          <DocumentList />
+          <Item label="Add a page" Icon={Plus} onClick={onCreateDocument} />
+
+          <Popover>
+            <PopoverTrigger className="w-full mt-4">
+              <Item label="Trash" Icon={Trash} />
+            </PopoverTrigger>
+            <PopoverContent
+              className="p-0 w-72"
+              side={isMobile ? "bottom" : "right"}
+            >
+              <TrashBox />
+            </PopoverContent>
+          </Popover>
+        </div>
+
         <div
           className={cn(
             "absolute right-0 top-0 w-1 h-full cursor-ew-resize bg-primary/10 opacity-0 group-hover/sidebar:opacity-100 transition",
@@ -108,6 +156,20 @@ export const Sidebar = () => {
           )}
           onMouseDown={handleMouseDown}
         />
+
+        <div className="absolute bottom-0 px-2 bg-white/50 dark:bg-black/50 py-4 w-full">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-1 text-[13px]">
+              <Rocket />
+              <p className="opacity-70 font-bold">Free Plan</p>
+            </div>
+            <p className="text-[13px] opacity-70">1/3</p>
+          </div>
+          <Progress
+            className="mt-2"
+            value={arr.length >= 3 ? 100 : arr.length * 33.3}
+          />
+        </div>
       </div>
       <div
         className={cn(

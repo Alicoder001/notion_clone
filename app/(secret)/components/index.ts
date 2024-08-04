@@ -1,2 +1,3 @@
 import { Sidebar } from "./sidebar";
-export { Sidebar };
+import { UserBox } from "./user-box";
+export { Sidebar, UserBox };
