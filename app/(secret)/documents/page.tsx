@@ -6,12 +6,22 @@ import { Plus } from "lucide-react";
 import Image from "next/image";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const SecretPage = () => {
+  const router = useRouter();
   const { user } = useUser();
   const createDocument = useMutation(api.document.createDocument);
   const onCreateDocument = () => {
-    createDocument({ title: "New Document" });
+    const promise = createDocument({ title: "Untitled" }).then((docId) =>
+      router.push(`/documents/${docId}`)
+    );
+    toast.promise(promise, {
+      loading: "Creating a new blank...",
+      success: "Created a new blank.",
+      error: "Failed to create a new blank.",
+    });
   };
   return (
     <div className="h-screen w-full flex justify-center items-center space-y-4 flex-col">
