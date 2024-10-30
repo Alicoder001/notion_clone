@@ -12,7 +12,7 @@ import React, { ElementRef, useEffect, useRef, useState } from "react";
 import { cn } from "../../../lib/utils";
 import { useMediaQuery } from "usehooks-ts";
 import { DocumentList } from "../../(home)/components/document-list";
-import { Item } from "../../(home)/components/item";
+import { Item } from "./item";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { UserBox } from "./user-box";
@@ -24,11 +24,12 @@ import {
 } from "../../../components/ui/popover";
 import { TrashBox } from "./trash-box";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { Navbar } from "./navbar";
 
 export const Sidebar = () => {
   const isMobile = useMediaQuery("(max-width:770px)");
-  console.log(isMobile);
+  const params = useParams();
   const router = useRouter();
   const sidebarRef = useRef<ElementRef<"div">>(null);
   const navbarRef = useRef<ElementRef<"div">>(null);
@@ -186,15 +187,19 @@ export const Sidebar = () => {
         )}
         ref={navbarRef}
       >
-        <nav className=" bg-transparent px-3 py-2 w-full">
-          {isCollapsed && (
-            <MenuIcon
-              className=" h-6 w-6 text-muted-foreground"
-              role="button"
-              onClick={reset}
-            />
-          )}
-        </nav>
+        {params.documentId ? (
+          <Navbar isCollapsed={isCollapsed} reset={reset} />
+        ) : (
+          <nav className=" bg-transparent px-3 py-2 w-full">
+            {isCollapsed && (
+              <MenuIcon
+                className=" h-6 w-6 text-muted-foreground"
+                role="button"
+                onClick={reset}
+              />
+            )}
+          </nav>
+        )}
       </div>
     </>
   );

@@ -30,6 +30,7 @@ interface ItemProps {
   level?: number;
   documentIcon?: string;
   expanded?: boolean;
+  isSearch?: boolean;
   onExpand?: () => void;
   onClick?: () => void;
   active?: boolean;
@@ -45,6 +46,7 @@ export const Item = ({
   active,
   documentIcon,
   Icon,
+  isSearch,
 }: ItemProps) => {
   const { user } = useUser();
   const createDocument = useMutation(api.document.createDocument);
@@ -113,6 +115,13 @@ export const Item = ({
         )
       )}
       <span className="truncate"> {label}</span>
+
+      {isSearch && (
+        <kbd>
+          <span></span>
+        </kbd>
+      )}
+
       {!!id && (
         <div className="ml-auto flex  items-center gap-x-2">
           <DropdownMenu>
@@ -135,7 +144,9 @@ export const Item = ({
                 Delete
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <div className="">Last edited by {user?.fullName}</div>
+              <div className="text-xs text-muted-foreground p-2">
+                Last edited by {user?.fullName}
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
           <div
