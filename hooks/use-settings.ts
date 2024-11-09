@@ -1,17 +1,17 @@
 import { create } from "zustand";
 
-interface SearchStore {
+interface SettingStore {
   isOpen: boolean;
   onOpen: () => void;
   onClose: () => void;
   onToggle: () => void;
 }
 
-const useSearch = create<SearchStore>((set, get) => ({
+const useSetting = create<SettingStore>((set, get) => ({
   isOpen: false,
   onOpen: () => set({ isOpen: true }),
   onClose: () => set({ isOpen: false }),
   onToggle: () => set({ isOpen: !get().isOpen }),
 }));
 
-export default useSearch;
+export default useSetting;

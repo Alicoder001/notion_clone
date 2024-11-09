@@ -214,3 +214,22 @@ export const restore = mutation({
     return document;
   },
 });
+
+export const getSearch = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+    const userId = identity.subject;
+
+    const documents = await ctx.db
+      .query("documents")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .filter((query) => query.eq(query.field("isArchived"), false))
+      .order("desc")
+      .collect();
+    return documents;
+  },
+});

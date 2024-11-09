@@ -26,6 +26,8 @@ import { TrashBox } from "./trash-box";
 import { toast } from "sonner";
 import { useParams, useRouter } from "next/navigation";
 import { Navbar } from "./navbar";
+import useSearch from "../../../hooks/use-search";
+import useSetting from "../../../hooks/use-settings";
 
 export const Sidebar = () => {
   const isMobile = useMediaQuery("(max-width:770px)");
@@ -37,6 +39,7 @@ export const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
   const [isResetting, setIsResetting] = useState(false);
   const createDocument = useMutation(api.document.createDocument);
+  const setting = useSetting();
   useEffect(() => {
     if (isMobile) {
       collapse();
@@ -112,6 +115,8 @@ export const Sidebar = () => {
       error: "Failed to create a new document.",
     });
   };
+
+  const search = useSearch();
   const arr = [1];
   return (
     <>
@@ -136,8 +141,19 @@ export const Sidebar = () => {
 
         <div>
           <UserBox />
-          <Item label="Search" Icon={Search} />
-          <Item label="Settings" Icon={Settings} />
+          <Item
+            label="Search"
+            Icon={Search}
+            isSearch
+            onClick={() => search.onOpen()}
+          />
+          <Item
+            label="Settings"
+            Icon={Settings}
+            onClick={() => {
+              setting.onOpen();
+            }}
+          />
           <Item label="New Document" Icon={Plus} onClick={onCreateDocument} />
         </div>
         <div className="mt-4">
