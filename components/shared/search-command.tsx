@@ -29,6 +29,9 @@ const SearchCommand = () => {
       }
     };
     document.addEventListener("keydown", down);
+    return () => {
+      document.removeEventListener("keydown", down);
+    };
   });
   const onSelect = (value: string) => {
     router.push("/documents/" + value);

@@ -150,6 +150,7 @@ export const Sidebar = () => {
           <Item
             label="Settings"
             Icon={Settings}
+            isSettings
             onClick={() => {
               setting.onOpen();
             }}

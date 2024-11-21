@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +16,18 @@ import { Button } from "../ui/button";
 export default function SettingModal() {
   const setting = useSetting();
   const { isOpen, onClose, onOpen, onToggle } = setting;
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "j" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        onToggle();
+      }
+    };
+    document.addEventListener("keydown", down);
+    return () => {
+      document.removeEventListener("keydown", down);
+    };
+  });
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>

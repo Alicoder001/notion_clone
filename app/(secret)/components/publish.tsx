@@ -52,7 +52,7 @@ const Publish = ({ document }: PublishProps) => {
 
   return (
     <Popover>
-      <PopoverTrigger>
+      <PopoverTrigger asChild>
         <Button size={"sm"} variant={"ghost"}>
           Share
           {document.isPublished && (
