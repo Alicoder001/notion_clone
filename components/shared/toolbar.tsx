@@ -6,6 +6,7 @@ import { IconPicker } from "./icon-picker";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import TextareaAutosize from "react-textarea-autosize";
+import { useCoverImage } from "../../hooks/use-cover-image";
 
 interface ToolbarProps {
   document: Doc<"documents">;
@@ -13,6 +14,8 @@ interface ToolbarProps {
 }
 
 export const Toolbar = ({ document, preview }: ToolbarProps) => {
+  const coverImg = useCoverImage();
+
   const textareaRef = useRef<ElementRef<"textarea">>(null);
   const [value, setValue] = useState(document.title);
   const [isEditing, setIsEditing] = useState(false);
@@ -86,7 +89,11 @@ export const Toolbar = ({ document, preview }: ToolbarProps) => {
         )}
 
         {!document.coverImage && !preview && (
-          <Button size={"sm"} variant={"outline"}>
+          <Button
+            size={"sm"}
+            variant={"outline"}
+            onClick={() => coverImg.onOpen()}
+          >
             <ImageIcon className="h-4 w-4 mr-2" />
             <span className="">Add cover</span>
           </Button>

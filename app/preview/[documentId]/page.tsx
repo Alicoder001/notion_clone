@@ -1,31 +1,23 @@
 "use client";
-
 import React, { useMemo } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { Id } from "../../../convex/_generated/dataModel";
+import { useQuery } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import dynamic from "next/dynamic";
-import { Id } from "../../../../convex/_generated/dataModel";
-import { Cover } from "../../../../components/shared/cover";
-import { Skeleton } from "../../../../components/ui/skeleton";
-import { Toolbar } from "../../../../components/shared/toolbar";
-import { Block } from "@blocknote/core";
+import { Cover } from "../../../components/shared/cover";
+import { Skeleton } from "../../../components/ui/skeleton";
+import { Toolbar } from "../../../components/shared/toolbar";
 
 interface DocumentIdPageProps {
   params: {
     documentId: Id<"documents">;
   };
 }
-
-const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
-  // Fetch document data
+export default function Page({ params }: DocumentIdPageProps) {
   const document = useQuery(api.document.getDocumentById, {
     id: params.documentId,
   });
 
-  // Mutation to update fields
-  const updateFields = useMutation(api.document.updateFields);
-
-  // Dynamically import Editor component
   const Editor = useMemo(
     () =>
       dynamic(() => import("@/components/shared/editor"), {
@@ -33,8 +25,6 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
       }),
     []
   );
-
-  // Fallback if document is undefined or null
   if (!document) {
     return (
       <div>
@@ -54,23 +44,17 @@ const DocumentIdPage = ({ params }: DocumentIdPageProps) => {
       </div>
     );
   }
-
-  const onChange = (blocks: Block[]) => {
-    const newContent = JSON.stringify(blocks);
-    if (newContent !== document.content) {
-      updateFields({ id: document._id, content: newContent });
-    }
-  };
-
   return (
     <div className="pb-40">
-      <Cover url={document.coverImage} />
+      <Cover url={document.coverImage} preview />
       <div className="md:max-w-3xl lg:max-w-4xl mx-auto">
-        <Toolbar document={document} />
-        <Editor initialContent={document.content} onChange={onChange} />
+        <Toolbar document={document} preview />
+        <Editor
+          initialContent={document.content}
+          editable={false}
+          onChange={() => {}}
+        />
       </div>
     </div>
   );
-};
-
-export default DocumentIdPage;
+}
