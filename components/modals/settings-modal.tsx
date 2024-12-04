@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect } from "react";
+
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,14 +9,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import useSetting from "../../hooks/use-settings";
+
 import { ModeToggle } from "../shared/mode-toggle";
 import { Label } from "../ui/label";
-import { Settings } from "lucide-react";
 import { Button } from "../ui/button";
-export default function SettingModal() {
-  const setting = useSetting();
-  const { isOpen, onClose, onOpen, onToggle } = setting;
+import { Settings } from "lucide-react";
+import axios from "axios";
+import { toast } from "sonner";
+import { useUser } from "@clerk/clerk-react";
+import { Loader } from "../ui/loader";
+import useSetting from "../../hooks/use-settings";
+
+const SettingsModal = () => {
+  const settings = useSetting();
+  const { user } = useUser();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { isOpen, onClose, onToggle } = settings;
+
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "j" && (e.metaKey || e.ctrlKey)) {
@@ -23,11 +35,31 @@ export default function SettingModal() {
         onToggle();
       }
     };
+
     document.addEventListener("keydown", down);
-    return () => {
-      document.removeEventListener("keydown", down);
-    };
-  });
+    return () => document.removeEventListener("keydown", down);
+  }, [onToggle]);
+
+  const onSubmit = async () => {
+    setIsSubmitting(true);
+
+    try {
+      const { data } = await axios.post("/api/stripe/manage", {
+        email: user?.emailAddresses[0].emailAddress,
+      });
+      if (!data.status) {
+        setIsSubmitting(false);
+        toast.error("You are not subscribed to any plan.");
+        return;
+      }
+      window.open(data.url, "_self");
+      setIsSubmitting(false);
+    } catch (error) {
+      setIsSubmitting(false);
+      toast.error("Something went wrong. Please try again.");
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
@@ -47,14 +79,16 @@ export default function SettingModal() {
           <div className="flex flex-col gap-y-1">
             <Label>Payments</Label>
             <span className="text-[0.8rem] text-muted-foreground">
-              Manage your subsctiption and billing information
+              Manage your subscription and billing information
             </span>
           </div>
-          <Button size={"sm"}>
-            <Settings size={16} />
+          <Button size={"sm"} onClick={onSubmit}>
+            {isSubmitting ? <Loader /> : <Settings size={16} />}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
   );
-}
+};
+
+export default SettingsModal;

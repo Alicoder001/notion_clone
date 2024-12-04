@@ -19,7 +19,7 @@ export const Pricing = () => {
       <div className="mt-6">
         <div className="space-y-8 lg:grid lg:grid-cols-3 sm:gap-6 xl:gap-10 lg:space-y-0">
           {cards.map((card, idx) => (
-            <PricingCard key={idx} {...card} />
+            <PricingCard key={idx} {...card} priceId={card.priceId} />
           ))}
         </div>
       </div>
@@ -47,7 +47,7 @@ const cards = [
     options:
       "Unlimited blocks for teams, Unlimited file uploads, 30 day page history, Invite 100 guests",
     price: "8",
-    priceId: "price_1OIa9xL7w2jHXlsS4WjLBAXz",
+    priceId: "price_1QSBszLXEja7pUa1gNdND3nz",
   },
   {
     title: "Business",
@@ -55,6 +55,6 @@ const cards = [
     options:
       "SAML SSO, Private teamspaces, Bulk PDF export, Advanced page analytics, 90 day page history, Invite 250 guests",
     price: "15",
-    priceId: "price_1OIa9BL7w2jHXlsS0gMw5Bob",
+    priceId: "price_1QSBr8LXEja7pUa1amz6a28j",
   },
 ];

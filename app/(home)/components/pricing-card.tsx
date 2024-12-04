@@ -1,17 +1,20 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "../../../components/ui/button";
 import { Check } from "lucide-react";
 import { useConvexAuth } from "convex/react";
 import { Loader } from "../../../components/ui/loader";
-import { SignInButton } from "@clerk/clerk-react";
+import { SignInButton, useUser } from "@clerk/clerk-react";
 import Link from "next/link";
-
+import { toast } from "sonner";
+import axios from "axios";
+import { useRouter } from "next/navigation";
 interface PricingCardProps {
   title: string;
   subtitle: string;
   options: string;
   price: string;
+  priceId?: string;
 }
 
 export const PricingCard = ({
@@ -19,9 +22,32 @@ export const PricingCard = ({
   subtitle,
   options,
   price,
+  priceId,
 }: PricingCardProps) => {
+  const router = useRouter();
   const { isAuthenticated, isLoading } = useConvexAuth();
-
+  const { user } = useUser();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const onSubmit = async () => {
+    if (price === "Free") {
+      router.push("/documents");
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const { data } = await axios.post("/api/stripe/subscription", {
+        priceId,
+        email: user?.emailAddresses[0].emailAddress,
+        userId: user?.id,
+      });
+      window.open(data, "_self");
+      setIsSubmitting(false);
+    } catch (error) {
+      console.log(error);
+      setIsSubmitting(false);
+      toast.error("Something went wrong. Please try again");
+    }
+  };
   return (
     <div className="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-600 xl:p-8 dark:bg-black dark:text-white">
       <h3 className="mb-4 text-2xl font-semibold">{title}</h3>
@@ -49,7 +75,15 @@ export const PricingCard = ({
       )}
       {isAuthenticated && !isLoading && (
         <Link href="/documents">
-          <Button className="w-full">Get Started</Button>
+          <Button className="w-full" onClick={onSubmit} disabled={isSubmitting}>
+            {isSubmitting ? (
+              <>
+                <Loader /> <span className="ml-2">Submitting</span>
+              </>
+            ) : (
+              " Get Started"
+            )}
+          </Button>
         </Link>
       )}
       <ul role="list" className="space-y-4 text-left mt-8">

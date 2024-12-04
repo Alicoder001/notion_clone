@@ -13,7 +13,7 @@ import { cn } from "../../../lib/utils";
 import { useMediaQuery } from "usehooks-ts";
 import { DocumentList } from "../../(home)/components/document-list";
 import { Item } from "./item";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { UserBox } from "./user-box";
 import { Progress } from "../../../components/ui/progress";
@@ -28,8 +28,13 @@ import { useParams, useRouter } from "next/navigation";
 import { Navbar } from "./navbar";
 import useSearch from "../../../hooks/use-search";
 import useSetting from "../../../hooks/use-settings";
+import { useUser } from "@clerk/clerk-react";
+import useSubscription from "../../../hooks/use-subscription";
+import { Loader } from "../../../components/ui/loader";
 
 export const Sidebar = () => {
+  const { user } = useUser();
+
   const isMobile = useMediaQuery("(max-width:770px)");
   const params = useParams();
   const router = useRouter();
@@ -38,6 +43,12 @@ export const Sidebar = () => {
   const isResizing = useRef(false);
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
   const [isResetting, setIsResetting] = useState(false);
+  const { isLoading, plan } = useSubscription(
+    user?.emailAddresses[0].emailAddress!
+  );
+
+  const documents = useQuery(api.document.getAllDocuments, {});
+  console.log(documents);
   const createDocument = useMutation(api.document.createDocument);
   const setting = useSetting();
   useEffect(() => {
@@ -106,6 +117,11 @@ export const Sidebar = () => {
   };
 
   const onCreateDocument = () => {
+    if (documents?.length && documents.length >= 3 && plan === "Free") {
+      toast.error("You can only create 3 documents in the free plan");
+      return;
+    }
+    console.log(documents?.length);
     const promise = createDocument({ title: "Untitled" }).then((docId) =>
       router.push(`/documents/${docId}`)
     );
@@ -158,7 +174,7 @@ export const Sidebar = () => {
           <Item label="New Document" Icon={Plus} onClick={onCreateDocument} />
         </div>
         <div className="mt-4">
-          <DocumentList />
+          <DocumentList plan={plan} />
           <Item label="Add a page" Icon={Plus} onClick={onCreateDocument} />
 
           <Popover>
@@ -183,17 +199,39 @@ export const Sidebar = () => {
         />
 
         <div className="absolute bottom-0 px-2 bg-white/50 dark:bg-black/50 py-4 w-full">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-1 text-[13px]">
-              <Rocket />
-              <p className="opacity-70 font-bold">Free Plan</p>
+          {isLoading ? (
+            <div className="w-full flex justify-center items-center">
+              <Loader />
             </div>
-            <p className="text-[13px] opacity-70">1/3</p>
-          </div>
-          <Progress
-            className="mt-2"
-            value={arr.length >= 3 ? 100 : arr.length * 33.3}
-          />
+          ) : (
+            <>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-1 text-[13px]">
+                  <Rocket />
+                  <p className="opacity-70 font-bold">{plan} Plan</p>
+                </div>
+                {plan === "Free" ? (
+                  <p className="text-[13px] opacity-70">
+                    {documents?.length}/3
+                  </p>
+                ) : (
+                  <p className="text-[13px] opacity-70">
+                    {documents?.length} notes
+                  </p>
+                )}
+              </div>
+              {plan == "Free" && (
+                <Progress
+                  className="mt-2"
+                  value={
+                    documents?.length && documents.length >= 3
+                      ? 100
+                      : (documents?.length || 0) * 33.33
+                  }
+                />
+              )}
+            </>
+          )}
         </div>
       </div>
       <div

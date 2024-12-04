@@ -10,11 +10,13 @@ import { useParams, usePathname, useRouter } from "next/navigation";
 interface DocumentListProps {
   parentDocumentId?: Id<"documents">;
   level?: number;
+  plan: "string";
 }
 
 export const DocumentList = ({
   parentDocumentId,
   level = 0,
+  plan,
 }: DocumentListProps) => {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
@@ -73,9 +75,14 @@ export const DocumentList = ({
             onClick={() => onRedirect(document._id)}
             active={params.documentId === document._id}
             documentIcon={document.icon as string}
+            plan={plan}
           />
           {expanded[document._id] && (
-            <DocumentList parentDocumentId={document._id} level={level + 1} />
+            <DocumentList
+              parentDocumentId={document._id}
+              level={level + 1}
+              plan={plan}
+            />
           )}
         </div>
       ))}

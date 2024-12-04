@@ -1,11 +1,14 @@
+"use client";
 import React from "react";
 import { Id } from "../../../convex/_generated/dataModel";
 import { useRouter } from "next/navigation";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
 import { Button } from "../../../components/ui/button";
 import { ConfirmModal } from "../../../components/modals/confirm-modal";
+import useSubscription from "../../../hooks/use-subscription";
+import { useUser } from "@clerk/clerk-react";
 
 interface BannerProps {
   documentId: Id<"documents">;
@@ -24,7 +27,18 @@ const Banner = ({ documentId }: BannerProps) => {
     });
     router.push("/documents");
   };
+  const documents = useQuery(api.document.getAllDocuments, {});
+  const { user } = useUser();
+  const { plan, isLoading } = useSubscription(
+    user?.emailAddresses[0].emailAddress!
+  );
   const onRestore = () => {
+    if (documents?.length && documents.length >= 3 && plan === "Free") {
+      toast.error(
+        "You already have 3 notes. Please  delete one to restore this note."
+      );
+      return;
+    }
     const promise = restore({ id: documentId });
     toast.promise(promise, {
       loading: "Restoring document...",

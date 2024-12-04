@@ -9,6 +9,8 @@ import { Loader } from "../../../components/ui/loader";
 import { ConfirmModal } from "../../../components/modals/confirm-modal";
 import { Id } from "../../../convex/_generated/dataModel";
 import { toast } from "sonner";
+import { useUser } from "@clerk/clerk-react";
+import useSubscription from "../../../hooks/use-subscription";
 
 export const TrashBox = () => {
   const router = useRouter();
@@ -17,6 +19,12 @@ export const TrashBox = () => {
   const remove = useMutation(api.document.remove);
   const [search, setSearch] = useState("");
   console.log(params);
+  const allDocuments = useQuery(api.document.getAllDocuments, {});
+  const { user } = useUser();
+  const restore = useMutation(api.document.restore);
+  const { plan, isLoading } = useSubscription(
+    user?.emailAddresses[0].emailAddress!
+  );
   if (documents === undefined) {
     return (
       <div className="h-full flex items-center justify-center p-4">
@@ -39,6 +47,21 @@ export const TrashBox = () => {
       success: "Document removed successfully!",
       error: "Failed to remove document",
     });
+  };
+  const onRestore = (documentId: Id<"documents">) => {
+    if (allDocuments?.length && allDocuments.length >= 3 && plan === "Free") {
+      toast.error(
+        "You already have 3 notes. Please  delete one to restore this note."
+      );
+      return;
+    }
+    const promise = restore({ id: documentId });
+    toast.promise(promise, {
+      loading: "Restoring document...",
+      success: "Document restored successfully.",
+      error: "Failed to restore document.",
+    });
+    router.push("/documents");
   };
   return (
     <div className="text-sm">
@@ -68,7 +91,12 @@ export const TrashBox = () => {
                 className="rounded-sm p-2 hover:bg-neutral-200 dark:hover:bg-neutral-600"
                 role="button"
               >
-                <Undo className="h-4 w-4 text-muted-foreground" />
+                <Undo
+                  onClick={() => {
+                    onRestore(document._id);
+                  }}
+                  className="h-4 w-4 text-muted-foreground"
+                />
               </div>
               <ConfirmModal onConfirm={() => onRemove(document._id)}>
                 <div

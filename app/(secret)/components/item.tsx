@@ -17,7 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "../../../components/ui/dropdown-menu";
 import { useUser } from "@clerk/clerk-react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Skeleton } from "../../../components/ui/skeleton";
 import { cn } from "../../../lib/utils";
@@ -36,6 +36,7 @@ interface ItemProps {
   onClick?: () => void;
   active?: boolean;
   Icon?: LucideIcon;
+  plan?: string;
 }
 export const Item = ({
   id,
@@ -49,17 +50,23 @@ export const Item = ({
   Icon,
   isSearch,
   isSettings,
+  plan = "Free",
 }: ItemProps) => {
   const { user } = useUser();
   const createDocument = useMutation(api.document.createDocument);
   const archive = useMutation(api.document.archive);
   const router = useRouter();
-
+  const documents = useQuery(api.document.getAllDocuments, {});
+  console.log(plan);
   const onCreateDocument = (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => {
     event.stopPropagation();
     if (!id) return;
+    if (documents?.length && documents.length >= 3 && plan === "Free") {
+      toast.error("You can only create 3 documents in the free plan");
+      return;
+    }
     createDocument({
       title: "Untitled",
       parendDocument: id,
